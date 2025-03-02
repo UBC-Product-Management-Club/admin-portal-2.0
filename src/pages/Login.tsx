@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -7,24 +7,16 @@ import { Button } from '@/components/ui/button';
 const Login = () => {
   const { login, isLoading, isAuthenticated } = useAuth();
   const navigate = useNavigate();
-  const [loggingIn, setLoggingIn] = useState(false);
 
   // Redirect if already authenticated
-  if (isAuthenticated) {
-    navigate('/members');
-    return null;
-  }
-
-  const handleLogin = async () => {
-    try {
-      setLoggingIn(true);
-      await login();
+  useEffect(() => {
+    if (isAuthenticated) {
       navigate('/members');
-    } catch (error) {
-      console.error('Login failed:', error);
-    } finally {
-      setLoggingIn(false);
     }
+  }, [isAuthenticated, navigate]);
+
+  const handleLogin = () => {
+    login();
   };
 
   return (
@@ -45,10 +37,10 @@ const Login = () => {
           <div className="flex flex-col space-y-4">
             <Button
               onClick={handleLogin}
-              disabled={loggingIn || isLoading}
+              disabled={isLoading}
               className="w-full"
             >
-              {loggingIn || isLoading ? (
+              {isLoading ? (
                 <div className="flex items-center gap-2">
                   <div className="h-4 w-4 animate-spin rounded-full border-2 border-background border-t-transparent"></div>
                   <span>Logging in...</span>
@@ -58,7 +50,7 @@ const Login = () => {
               )}
             </Button>
             <div className="text-center text-xs text-muted-foreground">
-              This is a demo application with simulated authentication.
+              Please sign in to access the membership portal.
             </div>
           </div>
         </div>

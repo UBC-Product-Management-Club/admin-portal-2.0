@@ -51,7 +51,7 @@ export const EventFormSchema = z.object({
 
 export type EventForm = z.infer<typeof EventFormSchema>;
 
-// Add missing Auth types
+// Updated Auth types to work with Auth0
 export type AuthUser = {
     email: string;
     name: string;
