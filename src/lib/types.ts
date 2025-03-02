@@ -1,74 +1,51 @@
-
 import { z } from 'zod';
 
-// Event Schema
 export type Event = {
-    event_Id: string
-    name: string
+    event_Id: string // generated
+    name: string // from request
     date: string // Date in ISO format (e.g. YYYY-MM-DD)
     start_time: string // start time in ISO format (e.g. Thh:mm:ss)
     end_time: string // end time in ISO format (e.g. Thh:mm:ss)
-    location: string
-    description: string
-    media: string[]
-    member_price: number | string
-    non_member_price: number | string
+    location: string // from request
+    description: string // from request
+    media: string[] // generated
+    member_price: number | string // from request
+    non_member_price: number | string // from request
     attendee_Ids: string[] | string
-    member_only: boolean | string
+    member_only: boolean | string // from request
     maxAttendee: number
     eventFormId: string | undefined
-    isDisabled: boolean
+    isDisabled: boolean // manually write default as "false" when adding new event
 }
 
-// Event Form Schema
-export const QuestionSchema = z.object({
-    label: z.string(),
-    questionType: z.enum(['short-answer', 'long-answer', 'dropdown', 'checkbox', 'radio', 'file']),
-    options: z.array(z.string()).optional(),
-    required: z.boolean().optional()
-});
-
-export const EventFormSchema = z.object({
-    id: z.string(),
-    title: z.string(),
-    questions: z.array(QuestionSchema),
-});
-
-export type EventForm = z.infer<typeof EventFormSchema>;
-export type Question = z.infer<typeof QuestionSchema>;
-
-// User Schema
 export type Member = {
     id: string
     first_name: string
     last_name: string
     pronouns: string
-    email: string
-    displayName: string
+    email: string // from Google
+    displayName: string // from Google
     university: string
     student_id: number
-    year: string
+    year: string // "5+"
     faculty: string
     major: string
     why_PM: string
     returning_member: boolean
     paymentVerified: boolean
-    joined_date: string
-    events_attended: string[]
 }
 
-// Auth Context Types
-export type AuthUser = {
-    id: string
-    email: string
-    name: string
-    picture?: string
-}
+export const QuestionSchema = z.object({
+    label: z.string(),
+    questionType: z.enum(['short-answer', 'long-answer', 'dropdown', 'checkbox', 'radio', 'file']),
+    options: z.array(z.string()).optional(),
+    required: z.boolean().optional().default(false)
+});
 
-export type AuthContextType = {
-    isAuthenticated: boolean
-    isLoading: boolean
-    user: AuthUser | null
-    login: () => Promise<void>
-    logout: () => Promise<void>
-}
+export const EventFormSchema = z.object({
+    id: z.string().optional(),
+    title: z.string(),
+    questions: z.array(QuestionSchema),
+});
+
+export type EventForm = z.infer<typeof EventFormSchema>;

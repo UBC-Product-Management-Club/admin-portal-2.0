@@ -1,78 +1,68 @@
 
-import { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { format } from 'date-fns';
-import { ArrowLeft, Calendar, User, Mail, School, BookOpen, Check, X } from 'lucide-react';
-
 import { useMembers } from '@/hooks/useMembers';
-import { useEvents } from '@/hooks/useEvents';
-import { Button } from '@/components/ui/button';
 import { PageHeader } from '@/components/shared/PageHeader';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { ArrowLeft, User, Trash2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { Separator } from '@/components/ui/separator';
+import { useState } from 'react';
 
 const MemberDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { getMember } = useMembers();
-  const { events } = useEvents();
+  const { getMember, deleteMember } = useMembers();
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  
   const { data: member, isLoading, error } = getMember(id || '');
 
-  useEffect(() => {
-    if (error) {
-      console.error('Error fetching member:', error);
+  const handleDelete = () => {
+    if (id) {
+      deleteMember(id);
+      navigate('/members');
     }
-  }, [error]);
-
-  const goBack = () => {
-    navigate('/members');
   };
-
-  const attendedEvents = events.filter(
-    (event) => member?.events_attended.includes(event.event_Id)
-  );
 
   if (isLoading) {
     return (
       <div className="container mx-auto p-6">
-        <div className="flex items-center mb-6">
-          <Button variant="ghost" onClick={goBack} className="mr-4">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back
+        <div className="flex items-center space-x-4">
+          <Button variant="outline" size="icon" onClick={() => navigate('/members')}>
+            <ArrowLeft className="h-4 w-4" />
           </Button>
-          <Skeleton className="h-8 w-64" />
-        </div>
-        <div className="grid gap-6 md:grid-cols-2">
-          <Skeleton className="h-[300px] rounded-lg" />
-          <Skeleton className="h-[300px] rounded-lg" />
+          <h1 className="text-2xl font-bold">Loading member details...</h1>
         </div>
       </div>
     );
   }
 
-  if (!member) {
+  if (error || !member) {
     return (
       <div className="container mx-auto p-6">
-        <PageHeader
-          title="Member Not Found"
-          subtitle="The requested member could not be found."
-          actions={
-            <Button variant="outline" onClick={goBack}>
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Members
-            </Button>
-          }
-        />
+        <div className="flex items-center space-x-4">
+          <Button variant="outline" size="icon" onClick={() => navigate('/members')}>
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <h1 className="text-2xl font-bold">Member not found</h1>
+        </div>
+        <p className="mt-4 text-muted-foreground">
+          The member you're looking for doesn't exist or has been removed.
+        </p>
+        <Button className="mt-4" onClick={() => navigate('/members')}>
+          Back to Members
+        </Button>
       </div>
     );
   }
@@ -80,158 +70,116 @@ const MemberDetail = () => {
   return (
     <div className="container mx-auto p-6">
       <PageHeader
-        title={member.displayName}
-        subtitle={`Member details for ${member.displayName}`}
+        title={`${member.first_name} ${member.last_name}`}
+        subtitle={member.email}
+        backButton={{
+          label: 'Back to Members',
+          onClick: () => navigate('/members')
+        }}
         actions={
-          <Button variant="outline" onClick={goBack}>
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Members
-          </Button>
+          <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+            <AlertDialogTrigger asChild>
+              <Button variant="destructive">
+                <Trash2 className="mr-2 h-4 w-4" />
+                Delete Member
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action cannot be undone. This will permanently delete the member
+                  and remove their data from our servers.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={handleDelete}>
+                  Delete
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         }
       />
 
-      <div className="grid gap-6 md:grid-cols-2 animate-fade-in">
-        <Card className="glass-card">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <User className="h-5 w-5 text-primary" />
-              Personal Information
+            <CardTitle className="flex items-center">
+              <User className="mr-2 h-5 w-5" />
+              Profile
             </CardTitle>
+            <CardDescription>Basic member information</CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm font-medium">First Name</p>
-                  <p className="text-sm text-muted-foreground">{member.first_name}</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium">Last Name</p>
-                  <p className="text-sm text-muted-foreground">{member.last_name}</p>
-                </div>
-              </div>
-
-              <div>
-                <p className="text-sm font-medium">Pronouns</p>
-                <p className="text-sm text-muted-foreground">{member.pronouns}</p>
-              </div>
-
-              <div>
-                <p className="text-sm font-medium">Email</p>
-                <div className="flex items-center gap-2">
-                  <Mail className="h-4 w-4 text-muted-foreground" />
-                  <p className="text-sm text-muted-foreground">{member.email}</p>
-                </div>
-              </div>
-
-              <div>
-                <p className="text-sm font-medium">Joined Date</p>
-                <p className="text-sm text-muted-foreground">
-                  {format(new Date(member.joined_date), 'MMMM d, yyyy')}
-                </p>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <Badge variant={member.returning_member ? 'default' : 'outline'}>
-                  {member.returning_member ? 'Returning Member' : 'New Member'}
-                </Badge>
-                <Badge variant={member.paymentVerified ? 'success' : 'destructive'}>
-                  {member.paymentVerified ? 'Payment Verified' : 'Payment Pending'}
-                </Badge>
-              </div>
+          <CardContent className="space-y-4">
+            <div>
+              <p className="text-sm font-medium text-muted-foreground">Display Name</p>
+              <p>{member.displayName}</p>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-muted-foreground">Pronouns</p>
+              <p>{member.pronouns}</p>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-muted-foreground">Email</p>
+              <p>{member.email}</p>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-muted-foreground">Payment Status</p>
+              <Badge variant={member.paymentVerified ? "default" : "destructive"}>
+                {member.paymentVerified ? 'Verified' : 'Pending'}
+              </Badge>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="glass-card">
+        <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <School className="h-5 w-5 text-primary" />
-              Academic Information
-            </CardTitle>
+            <CardTitle>Academic Information</CardTitle>
+            <CardDescription>University and program details</CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div>
-                <p className="text-sm font-medium">University</p>
-                <p className="text-sm text-muted-foreground">{member.university}</p>
-              </div>
-
-              <div>
-                <p className="text-sm font-medium">Student ID</p>
-                <p className="text-sm text-muted-foreground">{member.student_id}</p>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm font-medium">Year</p>
-                  <p className="text-sm text-muted-foreground">{member.year}</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium">Faculty</p>
-                  <p className="text-sm text-muted-foreground">{member.faculty}</p>
-                </div>
-              </div>
-
-              <div>
-                <p className="text-sm font-medium">Major</p>
-                <p className="text-sm text-muted-foreground">{member.major}</p>
-              </div>
+          <CardContent className="space-y-4">
+            <div>
+              <p className="text-sm font-medium text-muted-foreground">University</p>
+              <p>{member.university}</p>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-muted-foreground">Student ID</p>
+              <p>{member.student_id}</p>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-muted-foreground">Year</p>
+              <p>{member.year}</p>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-muted-foreground">Faculty</p>
+              <p>{member.faculty}</p>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-muted-foreground">Major</p>
+              <p>{member.major}</p>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="md:col-span-2 glass-card">
+        <Card className="md:col-span-2 lg:col-span-1">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <BookOpen className="h-5 w-5 text-primary" />
-              Additional Information
-            </CardTitle>
+            <CardTitle>Membership Information</CardTitle>
+            <CardDescription>Details about their membership</CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div>
-                <p className="text-sm font-medium">Why Interested in Product Management?</p>
-                <p className="text-sm text-muted-foreground whitespace-pre-wrap">{member.why_PM}</p>
-              </div>
+          <CardContent className="space-y-4">
+            <div>
+              <p className="text-sm font-medium text-muted-foreground">Returning Member</p>
+              <Badge variant={member.returning_member ? "default" : "outline"}>
+                {member.returning_member ? 'Returning Member' : 'New Member'}
+              </Badge>
             </div>
-          </CardContent>
-        </Card>
-
-        <Card className="md:col-span-2 glass-card">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Calendar className="h-5 w-5 text-primary" />
-              Events Attended ({attendedEvents.length})
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {attendedEvents.length > 0 ? (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Event Name</TableHead>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Location</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {attendedEvents.map((event) => (
-                    <TableRow key={event.event_Id}>
-                      <TableCell className="font-medium">{event.name}</TableCell>
-                      <TableCell>
-                        {format(new Date(event.date), 'MMMM d, yyyy')}
-                      </TableCell>
-                      <TableCell>{event.location}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            ) : (
-              <div className="py-4 text-center text-muted-foreground">
-                This member has not attended any events yet.
-              </div>
-            )}
+            <Separator className="my-4" />
+            <div>
+              <p className="text-sm font-medium text-muted-foreground">Why PM?</p>
+              <p className="whitespace-pre-line">{member.why_PM}</p>
+            </div>
           </CardContent>
         </Card>
       </div>

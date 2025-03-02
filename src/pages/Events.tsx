@@ -1,6 +1,5 @@
 
 import { useState } from 'react';
-import { ColumnDef } from '@tanstack/react-table';
 import { format } from 'date-fns';
 import { CalendarX, Edit, Plus, Trash2 } from 'lucide-react';
 
@@ -143,7 +142,7 @@ const Events = () => {
     }
   };
 
-  const columns: ColumnDef<Event>[] = [
+  const columns = [
     {
       accessorKey: 'name',
       header: 'Event Name',
@@ -481,8 +480,8 @@ const Events = () => {
           searchColumn="name"
           searchPlaceholder="Search events..."
           emptyState={{
-            title: 'No events found',
-            description: 'There are no events in the system or none match your search.',
+            title: "No events found",
+            description: "There are no events in the system or none match your search.",
             icon: <CalendarX className="h-10 w-10 text-muted-foreground/40" />,
             action: (
               <Button 

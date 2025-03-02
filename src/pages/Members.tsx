@@ -1,15 +1,11 @@
 
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ColumnDef } from '@tanstack/react-table';
-import { Eye, Trash2, UserX } from 'lucide-react';
-import { toast } from 'sonner';
-
 import { useMembers } from '@/hooks/useMembers';
-import { Member } from '@/lib/types';
-import { Button } from '@/components/ui/button';
-import { DataTable } from '@/components/ui/data-table';
 import { PageHeader } from '@/components/shared/PageHeader';
+import { DataTable } from '@/components/ui/data-table';
+import { Button } from '@/components/ui/button';
+import { User, UserRoundX, MoreHorizontal } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -21,46 +17,42 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
 
 const Members = () => {
-  const { members, isLoading, deleteMember } = useMembers();
   const navigate = useNavigate();
+  const { members, isLoading, deleteMember } = useMembers();
   const [memberToDelete, setMemberToDelete] = useState<string | null>(null);
 
-  const handleViewMember = (id: string) => {
-    navigate(`/members/${id}`);
+  const handleViewMember = (memberId: string) => {
+    navigate(`/members/${memberId}`);
   };
 
-  const handleDeleteMember = async () => {
+  const handleDeleteMember = () => {
     if (memberToDelete) {
-      try {
-        await deleteMember(memberToDelete);
-        setMemberToDelete(null);
-      } catch (error) {
-        console.error('Error deleting member:', error);
-        toast.error('Failed to delete member');
-      }
+      deleteMember(memberToDelete);
+      setMemberToDelete(null);
     }
   };
 
-  const columns: ColumnDef<Member>[] = [
+  const columns = [
     {
       accessorKey: 'displayName',
       header: 'Name',
-      cell: ({ row }) => {
-        const member = row.original;
-        return (
-          <div className="flex items-center gap-2">
-            <div className="font-medium">{member.displayName}</div>
-            {member.returning_member && (
-              <Badge variant="outline" className="ml-2">
-                Returning
-              </Badge>
-            )}
-          </div>
-        );
-      },
+      cell: ({ row }) => (
+        <div className="flex items-center gap-2">
+          <User className="h-4 w-4" />
+          <span>{row.original.displayName || `${row.original.first_name} ${row.original.last_name}`}</span>
+        </div>
+      ),
     },
     {
       accessorKey: 'email',
@@ -71,65 +63,69 @@ const Members = () => {
       header: 'University',
     },
     {
-      accessorKey: 'faculty',
-      header: 'Faculty',
+      accessorKey: 'major',
+      header: 'Major',
+    },
+    {
+      accessorKey: 'year',
+      header: 'Year',
     },
     {
       accessorKey: 'paymentVerified',
       header: 'Payment Status',
-      cell: ({ row }) => {
-        const verified = row.original.paymentVerified;
-        return (
-          <Badge variant={verified ? 'default' : 'destructive'}>
-            {verified ? 'Verified' : 'Pending'}
-          </Badge>
-        );
-      },
+      cell: ({ row }) => (
+        <Badge variant={row.original.paymentVerified ? "default" : "outline"}>
+          {row.original.paymentVerified ? 'Verified' : 'Pending'}
+        </Badge>
+      ),
     },
     {
       id: 'actions',
-      header: 'Actions',
       cell: ({ row }) => {
         const member = row.original;
+
         return (
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => handleViewMember(member.id)}
-              title="View member details"
-            >
-              <Eye className="h-4 w-4" />
-            </Button>
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button
-                  variant="destructive"
-                  size="icon"
-                  onClick={() => setMemberToDelete(member.id)}
-                  title="Delete member"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Delete Member</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    Are you sure you want to delete this member? This action cannot be undone.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel onClick={() => setMemberToDelete(null)}>
-                    Cancel
-                  </AlertDialogCancel>
-                  <AlertDialogAction onClick={handleDeleteMember}>
-                    Delete
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="h-8 w-8 p-0">
+                <span className="sr-only">Open menu</span>
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+              <DropdownMenuItem onClick={() => handleViewMember(member.id)}>
+                View details
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <DropdownMenuItem onSelect={(e) => {
+                    e.preventDefault();
+                    setMemberToDelete(member.id);
+                  }}>
+                    Delete member
+                  </DropdownMenuItem>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This will permanently delete this member and remove all their data from the system.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel onClick={() => setMemberToDelete(null)}>
+                      Cancel
+                    </AlertDialogCancel>
+                    <AlertDialogAction onClick={handleDeleteMember}>
+                      Delete
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </DropdownMenuContent>
+          </DropdownMenu>
         );
       },
     },
@@ -139,9 +135,8 @@ const Members = () => {
     <div className="container mx-auto p-6">
       <PageHeader
         title="Members"
-        subtitle="View and manage all members"
+        subtitle="Manage organization members"
       />
-
       <div className="mt-6">
         <DataTable
           columns={columns}
@@ -149,9 +144,9 @@ const Members = () => {
           searchColumn="displayName"
           searchPlaceholder="Search members..."
           emptyState={{
-            title: 'No members found',
-            description: 'There are no members in the system or none match your search.',
-            icon: <UserX className="h-10 w-10 text-muted-foreground/40" />,
+            title: "No members found",
+            description: "There are no members in the organization yet.",
+            icon: <UserRoundX className="h-10 w-10 text-muted-foreground/40" />,
           }}
         />
       </div>
