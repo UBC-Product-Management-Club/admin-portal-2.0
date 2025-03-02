@@ -11,7 +11,7 @@ const Login = () => {
   // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated) {
-      navigate('/members');
+      navigate('/');
     }
   }, [isAuthenticated, navigate]);
 
@@ -33,7 +33,7 @@ const Login = () => {
             Manage members, events, and forms.
           </p>
         </div>
-        <div className="glass-card p-6 rounded-lg">
+        <div className="bg-card border p-6 rounded-lg shadow-sm">
           <div className="flex flex-col space-y-4">
             <Button
               onClick={handleLogin}
