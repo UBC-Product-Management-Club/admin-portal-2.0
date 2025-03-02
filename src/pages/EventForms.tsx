@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useEventForms } from '@/hooks/useEventForms';
 import { PageHeader } from '@/components/shared/PageHeader';
@@ -48,6 +47,8 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { Separator } from '@/components/ui/separator';
 
+type QuestionType = 'short-answer' | 'long-answer' | 'dropdown' | 'checkbox' | 'radio' | 'file';
+
 const EventForms = () => {
   const { eventForms, isLoading, createEventForm, updateEventForm, deleteEventForm } = useEventForms();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -61,9 +62,14 @@ const EventForms = () => {
     questions: [],
   });
 
-  const [newQuestion, setNewQuestion] = useState({
+  const [newQuestion, setNewQuestion] = useState<{
+    label: string;
+    questionType: QuestionType;
+    options: string[];
+    required: boolean;
+  }>({
     label: '',
-    questionType: 'short-answer' as const,
+    questionType: 'short-answer',
     options: [''],
     required: true,
   });
@@ -104,7 +110,7 @@ const EventForms = () => {
   const handleQuestionTypeChange = (value: string) => {
     setNewQuestion((prev) => ({ 
       ...prev, 
-      questionType: value as 'short-answer' | 'long-answer' | 'dropdown' | 'checkbox' | 'radio' | 'file',
+      questionType: value as QuestionType,
       options: [''] 
     }));
   };
@@ -137,18 +143,13 @@ const EventForms = () => {
       return;
     }
 
-    // Filter out empty options for multi-choice questions
-    const filteredOptions = newQuestion.questionType === 'dropdown' || 
-                           newQuestion.questionType === 'checkbox' || 
-                           newQuestion.questionType === 'radio'
-                           ? newQuestion.options.filter(option => option.trim() !== '')
-                           : undefined;
+    const isMultiChoiceType = ['dropdown', 'checkbox', 'radio'].includes(newQuestion.questionType);
+    
+    const filteredOptions = isMultiChoiceType
+                          ? newQuestion.options.filter(option => option.trim() !== '')
+                          : undefined;
 
-    // Validate that multi-choice questions have at least one option
-    if ((newQuestion.questionType === 'dropdown' || 
-         newQuestion.questionType === 'checkbox' || 
-         newQuestion.questionType === 'radio') && 
-        (!filteredOptions || filteredOptions.length === 0)) {
+    if (isMultiChoiceType && (!filteredOptions || filteredOptions.length === 0)) {
       toast.error('Multi-choice questions must have at least one option');
       return;
     }
@@ -163,7 +164,6 @@ const EventForms = () => {
       questions: [...prev.questions, questionToAdd],
     }));
 
-    // Reset the new question form
     setNewQuestion({
       label: '',
       questionType: 'short-answer',
@@ -190,7 +190,6 @@ const EventForms = () => {
       return;
     }
 
-    // Create a copy without the ID for the create operation
     const { id, ...formDataWithoutId } = formData;
     createEventForm(formDataWithoutId);
     setIsCreateOpen(false);
@@ -289,9 +288,7 @@ const EventForms = () => {
                             </Button>
                           </div>
                         </CardHeader>
-                        {(question.questionType === 'dropdown' || 
-                          question.questionType === 'checkbox' || 
-                          question.questionType === 'radio') && 
+                        {(['dropdown', 'checkbox', 'radio'].includes(question.questionType as QuestionType)) && 
                           question.options && (
                           <CardContent>
                             <div className="space-y-1">
@@ -344,9 +341,7 @@ const EventForms = () => {
                       </Select>
                     </div>
                     
-                    {(newQuestion.questionType === 'dropdown' || 
-                      newQuestion.questionType === 'checkbox' || 
-                      newQuestion.questionType === 'radio') && (
+                    {['dropdown', 'checkbox', 'radio'].includes(newQuestion.questionType) && (
                       <div className="space-y-3">
                         <Label>Options</Label>
                         {newQuestion.options.map((option, index) => (
@@ -416,7 +411,6 @@ const EventForms = () => {
         }
       />
 
-      {/* Edit Form Dialog */}
       <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
         <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
@@ -465,9 +459,7 @@ const EventForms = () => {
                         </Button>
                       </div>
                     </CardHeader>
-                    {(question.questionType === 'dropdown' || 
-                      question.questionType === 'checkbox' || 
-                      question.questionType === 'radio') && 
+                    {(['dropdown', 'checkbox', 'radio'].includes(question.questionType as QuestionType)) && 
                       question.options && (
                       <CardContent>
                         <div className="space-y-1">
@@ -520,9 +512,7 @@ const EventForms = () => {
                   </Select>
                 </div>
                 
-                {(newQuestion.questionType === 'dropdown' || 
-                  newQuestion.questionType === 'checkbox' || 
-                  newQuestion.questionType === 'radio') && (
+                {['dropdown', 'checkbox', 'radio'].includes(newQuestion.questionType) && (
                   <div className="space-y-3">
                     <Label>Options</Label>
                     {newQuestion.options.map((option, index) => (
@@ -591,7 +581,6 @@ const EventForms = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Event Forms List */}
       <div className="mt-6 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {isLoading ? (
           <p>Loading event forms...</p>

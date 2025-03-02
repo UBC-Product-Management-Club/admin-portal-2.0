@@ -90,7 +90,11 @@ export function DataTable<TData, TValue>({
     
     // Get headers (use column id or header as display name)
     const headers = visibleColumns.map(colId => {
-      const col = columns.find(c => c.id === colId || c.accessorKey === colId);
+      const col = columns.find(c => {
+        // Use type assertion to access accessorKey
+        const columnDef = c as any;
+        return columnDef.id === colId || columnDef.accessorKey === colId;
+      });
       // Get the display name from header if it's a string, otherwise use the column id
       const headerValue = col?.header;
       return typeof headerValue === 'string' ? headerValue : colId;

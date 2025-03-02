@@ -1,3 +1,4 @@
+
 import { z } from 'zod';
 
 export type Event = {
@@ -49,3 +50,19 @@ export const EventFormSchema = z.object({
 });
 
 export type EventForm = z.infer<typeof EventFormSchema>;
+
+// Add missing Auth types
+export type AuthUser = {
+    email: string;
+    name: string;
+    picture: string;
+    sub: string;
+};
+
+export type AuthContextType = {
+    isAuthenticated: boolean;
+    isLoading: boolean;
+    user: AuthUser | null;
+    login: () => void;
+    logout: () => void;
+};
