@@ -6,12 +6,12 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
-import Events from "./pages/Events";
-import Members from "./pages/Members";
-import MemberDetail from "./pages/MemberDetail";
-import EventForms from "./pages/EventForms";
+import Events from "./pages/Events/Events";
+import Members from "./pages/Members/Members";
+import MemberDetail from "./pages/Members/MemberDetail";
+import EventForms from "./pages/EventForms/EventForms";
 import AppLayout from "./components/layout/AppLayout";
-import Login from "./pages/Login";
+import Login from "./pages/Auth/Login";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 
 const queryClient = new QueryClient();
