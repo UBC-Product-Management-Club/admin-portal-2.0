@@ -6,17 +6,14 @@ import './index.css'
 import { ThemeProvider } from './components/ThemeProvider.tsx'
 import { Auth0Provider } from '@auth0/auth0-react'
 
-const domain = 'your-auth0-domain.auth0.com' // Replace with your Auth0 domain
-const clientId = 'your-auth0-client-id' // Replace with your Auth0 client ID
-const redirectUri = window.location.origin
-
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <Auth0Provider
-      domain={domain}
-      clientId={clientId}
+      domain={import.meta.env.VITE_AUTH0_DOMAIN}
+      clientId={import.meta.env.VITE_AUTH0_CLIENT_ID}
       authorizationParams={{
-        redirect_uri: redirectUri
+        redirect_uri: window.location.href,
+        connection: import.meta.env.VITE_AUTH0_CONNECTION 
       }}
     >
       <ThemeProvider defaultTheme="system" storageKey="membership-portal-theme">
