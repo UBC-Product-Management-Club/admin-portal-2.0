@@ -180,7 +180,7 @@ const MemberDetail = () => {
             <Separator className="my-4" />
             <div>
               <p className="text-sm font-medium text-muted-foreground">Why PM?</p>
-              <p className="whitespace-pre-line">{member.why_PM}</p>
+              <p className="whitespace-pre-line">{member.why_pm}</p>
             </div>
           </CardContent>
         </Card>

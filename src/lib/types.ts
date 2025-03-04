@@ -26,12 +26,13 @@ export type Member = {
     pronouns: string
     email: string // from Google
     displayName: string // from Google
+    pfp: string // from Google
     university: string
     student_id: number
     year: string // "5+"
     faculty: string
     major: string
-    why_PM: string
+    why_pm: string
     returning_member: boolean
     paymentVerified: boolean
 }

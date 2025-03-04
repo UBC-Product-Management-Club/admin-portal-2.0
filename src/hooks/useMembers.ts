@@ -1,28 +1,29 @@
-
-import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { Member } from '@/lib/types';
-import { mockMembers } from '@/lib/mock-data';
 
 // Mock API functions
-const fetchMembers = async (): Promise<Member[]> => {
+const fetchAllMembers = async (): Promise<Member[]> => {
   // Simulate API call
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve(mockMembers);
-    }, 500);
-  });
+  const url = `${import.meta.env.VITE_API_URL}/users`
+  const req = await fetch(url)
+  if (req.ok) {
+    const res = await req.json()
+    return res
+  } else {
+    return [] 
+  }
 };
 
 const fetchMemberById = async (id: string): Promise<Member | undefined> => {
   // Simulate API call
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      const member = mockMembers.find(m => m.id === id);
-      resolve(member);
-    }, 300);
-  });
+  const url = `${import.meta.env.VITE_API_URL}/users/${id}`
+  const req = await(fetch(url))
+  if (req.ok) {
+    const res = await req.json()
+    return res
+  } 
+  return undefined
 };
 
 const deleteMember = async (id: string): Promise<boolean> => {
@@ -40,13 +41,13 @@ export function useMembers() {
 
   // Get all members
   const {
-    data: members = [],
+    data:  members = [],
     isLoading,
     error,
     refetch
   } = useQuery({
     queryKey: ['members'],
-    queryFn: fetchMembers
+    queryFn: fetchAllMembers
   });
 
   // Get a single member
