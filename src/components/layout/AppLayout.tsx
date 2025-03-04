@@ -55,7 +55,6 @@ const AppLayout = () => {
     const SidebarContent = () => (
         <div className="h-full flex flex-col">
             <div className="px-3 py-4">
-                <h1 className="text-xl font-bold mb-6 px-2">Membership Portal</h1>
                 <nav className="space-y-1">
                     {routes.map((route) => {
                         const Icon = route.icon;
@@ -80,15 +79,6 @@ const AppLayout = () => {
                     {/* User profile */}
                     <div className="mt-auto border-t border-sidebar-border p-4">
                         <div className="flex items-center gap-3">
-                            <div className="h-8 w-8 rounded-full bg-muted overflow-hidden">
-                                {user?.picture ? (
-                                    <img src={user.picture} alt={user?.name} className="h-full w-full object-cover" />
-                                ) : (
-                                    <div className="h-full w-full flex items-center justify-center bg-primary text-primary-foreground text-sm font-medium">
-                                        {user?.name?.charAt(0) || 'U'}
-                                    </div>
-                                )}
-                            </div>
                             {open && (
                                 <div className="flex flex-col">
                                     <span className="text-sm font-medium truncate max-w-[160px]">{user?.name}</span>
@@ -106,7 +96,7 @@ const AppLayout = () => {
                     </div>
                 </nav>
             </div>
-            <div className="mt-auto p-4">
+            <div className="absolute bottom-4 left-4">
                 <ThemeToggle />
             </div>
         </div>
@@ -120,16 +110,19 @@ const AppLayout = () => {
                     }`}
             >
                 {sidebarOpen ? (
-                    <div className="h-full relative">
+                    <div className="h-full relative flex flex-col items-start py-4">
+                        <div className="w-full flex flex-row items-center ml-4 gap-2">
+                            <h1 className="text-xl font-bold">Membership Portal</h1>
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className=""
+                                onClick={() => setSidebarOpen(false)}
+                            >
+                                <ChevronLeft className="h-4 w-4" />
+                            </Button>
+                        </div>
                         <SidebarContent />
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            className="absolute top-4 right-2"
-                            onClick={() => setSidebarOpen(false)}
-                        >
-                            <ChevronLeft className="h-4 w-4" />
-                        </Button>
                     </div>
                 ) : (
                     <div className="flex flex-col items-center py-4 h-full">
@@ -161,8 +154,15 @@ const AppLayout = () => {
                                     </NavLink>
                                 );
                             })}
+                            <button
+                                onClick={() => logout()}
+                                className="ml-auto rounded-full p-1.5 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                                aria-label="Log out"
+                            >
+                                <LogOut size={18} />
+                            </button>
                         </div>
-                        <div className="mt-auto mb-4">
+                        <div className="absolute bottom-4 left-2">
                             <ThemeToggle />
                         </div>
                     </div>
