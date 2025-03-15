@@ -1,7 +1,9 @@
 name: Build and Deploy to Cloud Run (STAGING)
 
-on:
-    workflow_dispatch:
+on: 
+    push:
+        branches:
+            - main
 
 env:
   PROJECT_ID: ${{ secrets.PROJECT_ID }}
