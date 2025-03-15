@@ -5,7 +5,7 @@ import { Member } from '@/lib/types';
 // Mock API functions
 const fetchAllMembers = async (): Promise<Member[]> => {
   // Simulate API call
-  const url = `${import.meta.env.VITE_API_URL}/users`
+  const url = `${import.meta.env.VITE_API_URL}/v1/admin/users`
   const req = await fetch(url)
   if (req.ok) {
     const res = await req.json()
@@ -17,7 +17,7 @@ const fetchAllMembers = async (): Promise<Member[]> => {
 
 const fetchMemberById = async (id: string): Promise<Member | undefined> => {
   // Simulate API call
-  const url = `${import.meta.env.VITE_API_URL}/users/${id}`
+  const url = `${import.meta.env.VITE_API_URL}/v1/admin/users/${id}`
   const req = await(fetch(url))
   if (req.ok) {
     const res = await req.json()
