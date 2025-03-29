@@ -6,13 +6,12 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
-import Events from "./pages/Events/Events";
 import Members from "./pages/Members/Members";
 import MemberDetail from "./pages/Members/MemberDetail";
-import EventForms from "./pages/EventForms/EventForms";
 import AppLayout from "./components/layout/AppLayout";
 import Login from "./pages/Auth/Login";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
+import InProgress from "./components/shared/InProgress";
 
 const queryClient = new QueryClient();
 
@@ -28,10 +27,10 @@ const App = () => (
           {/* Protected Routes */}
           <Route path="/" element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
             <Route index element={<Index />} />
-            <Route path="/events" element={<Events />} />
+            <Route path="/events" element={<InProgress />} />
             <Route path="/members" element={<Members />} />
             <Route path="/members/:id" element={<MemberDetail />} />
-            <Route path="/event-forms" element={<EventForms />} />
+            <Route path="/event-forms" element={<InProgress />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Route>
