@@ -41,6 +41,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import InProgress from '@/components/shared/InProgress';
 
 const Events = () => {
   const { events, isLoading, createEvent, updateEvent, deleteEvent } = useEvents();
@@ -406,96 +407,98 @@ const Events = () => {
   );
 
   return (
-    <div className="container mx-auto p-6">
-      <PageHeader
-        title="Events"
-        subtitle="Manage upcoming and past events"
-        actions={
-          <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="mr-2 h-4 w-4" />
-                Create Event
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[525px]">
-              <DialogHeader>
-                <DialogTitle>Create New Event</DialogTitle>
-                <DialogDescription>
-                  Fill in the details below to create a new event.
-                </DialogDescription>
-              </DialogHeader>
-              
-              <EventForm />
-              
-              <DialogFooter>
-                <Button 
-                  variant="outline" 
-                  onClick={() => {
-                    setIsCreateOpen(false);
-                    resetForm();
-                  }}
-                >
-                  Cancel
+    <InProgress>
+        <div className="container mx-auto p-6">
+        <PageHeader
+            title="Events"
+            subtitle="Manage upcoming and past events"
+            actions={
+            <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+                <DialogTrigger asChild>
+                <Button>
+                    <Plus className="mr-2 h-4 w-4" />
+                    Create Event
                 </Button>
-                <Button onClick={handleCreateEvent}>Create Event</Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-        }
-      />
-
-      {/* Edit Event Dialog */}
-      <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-        <DialogContent className="sm:max-w-[525px]">
-          <DialogHeader>
-            <DialogTitle>Edit Event</DialogTitle>
-            <DialogDescription>
-              Make changes to the event details.
-            </DialogDescription>
-          </DialogHeader>
-          
-          <EventForm />
-          
-          <DialogFooter>
-            <Button 
-              variant="outline" 
-              onClick={() => {
-                setIsEditOpen(false);
-                setEventToEdit(null);
-                resetForm();
-              }}
-            >
-              Cancel
-            </Button>
-            <Button onClick={handleUpdateEvent}>Save Changes</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      <div className="mt-6">
-        <DataTable
-          columns={columns}
-          data={events}
-          searchColumn="name"
-          searchPlaceholder="Search events..."
-          emptyState={{
-            title: "No events found",
-            description: "There are no events in the system or none match your search.",
-            icon: <CalendarX className="h-10 w-10 text-muted-foreground/40" />,
-            action: (
-              <Button 
-                onClick={() => setIsCreateOpen(true)}
-                className="mt-4"
-              >
-                <Plus className="mr-2 h-4 w-4" />
-                Create Event
-              </Button>
-            )
-          }}
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[525px]">
+                <DialogHeader>
+                    <DialogTitle>Create New Event</DialogTitle>
+                    <DialogDescription>
+                    Fill in the details below to create a new event.
+                    </DialogDescription>
+                </DialogHeader>
+              
+                <EventForm />
+              
+                <DialogFooter>
+                    <Button 
+                    variant="outline" 
+                    onClick={() => {
+                        setIsCreateOpen(false);
+                        resetForm();
+                    }}
+                    >
+                    Cancel
+                    </Button>
+                    <Button onClick={handleCreateEvent}>Create Event</Button>
+                </DialogFooter>
+                </DialogContent>
+            </Dialog>
+            }
         />
-      </div>
-    </div>
+
+        {/* Edit Event Dialog */}
+        <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
+            <DialogContent className="sm:max-w-[525px]">
+            <DialogHeader>
+                <DialogTitle>Edit Event</DialogTitle>
+                <DialogDescription>
+                Make changes to the event details.
+                </DialogDescription>
+            </DialogHeader>
+          
+            <EventForm />
+          
+            <DialogFooter>
+                <Button 
+                variant="outline" 
+                onClick={() => {
+                    setIsEditOpen(false);
+                    setEventToEdit(null);
+                    resetForm();
+                }}
+                >
+                Cancel
+                </Button>
+                <Button onClick={handleUpdateEvent}>Save Changes</Button>
+            </DialogFooter>
+            </DialogContent>
+        </Dialog>
+
+        <div className="mt-6">
+            <DataTable
+            columns={columns}
+            data={events}
+            searchColumn="name"
+            searchPlaceholder="Search events..."
+            emptyState={{
+                title: "No events found",
+                description: "There are no events in the system or none match your search.",
+                icon: <CalendarX className="h-10 w-10 text-muted-foreground/40" />,
+                action: (
+                <Button 
+                    onClick={() => setIsCreateOpen(true)}
+                    className="mt-4"
+                >
+                    <Plus className="mr-2 h-4 w-4" />
+                    Create Event
+                </Button>
+                )
+            }}
+            />
+        </div>
+        </div>
+    </InProgress>
   );
 };
 

@@ -46,6 +46,7 @@ import { EventForm } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { Separator } from '@/components/ui/separator';
+import InProgress from '@/components/shared/InProgress';
 
 type QuestionType = 'short-answer' | 'long-answer' | 'dropdown' | 'checkbox' | 'radio' | 'file';
 
@@ -229,448 +230,450 @@ const EventForms = () => {
   };
 
   return (
-    <div className="container mx-auto p-6">
-      <PageHeader
-        title="Event Forms"
-        subtitle="Create and manage event registration forms"
-        actions={
-          <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="mr-2 h-4 w-4" />
-                Create Form
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle>Create Event Form</DialogTitle>
-                <DialogDescription>
-                  Design a custom registration form for your events.
-                </DialogDescription>
-              </DialogHeader>
+    <InProgress>
+        <div className="container mx-auto p-6">
+        <PageHeader
+            title="Event Forms"
+            subtitle="Create and manage event registration forms"
+            actions={
+            <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+                <DialogTrigger asChild>
+                <Button>
+                    <Plus className="mr-2 h-4 w-4" />
+                    Create Form
+                </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+                <DialogHeader>
+                    <DialogTitle>Create Event Form</DialogTitle>
+                    <DialogDescription>
+                    Design a custom registration form for your events.
+                    </DialogDescription>
+                </DialogHeader>
               
-              <div className="grid gap-4 py-4">
+                <div className="grid gap-4 py-4">
+                    <div className="grid gap-2">
+                    <Label htmlFor="title">Form Title</Label>
+                    <Input
+                        id="title"
+                        name="title"
+                        value={formData.title}
+                        onChange={handleInputChange}
+                        placeholder="Enter form title"
+                    />
+                    </div>
+                
+                    {formData.questions.length > 0 && (
+                    <div className="space-y-4 mt-4">
+                        <h3 className="text-lg font-medium">Form Questions</h3>
+                        {formData.questions.map((question, index) => (
+                        <Card key={index}>
+                            <CardHeader className="pb-2">
+                            <div className="flex justify-between items-start">
+                                <div>
+                                <CardTitle className="text-base">{question.label}</CardTitle>
+                                <CardDescription className="flex items-center mt-1">
+                                    <Badge variant="outline" className="mr-2">
+                                    {questionTypes.find(t => t.value === question.questionType)?.label}
+                                    </Badge>
+                                    {question.required && (
+                                    <Badge variant="secondary">Required</Badge>
+                                    )}
+                                </CardDescription>
+                                </div>
+                                <Button
+                                variant="destructive"
+                                size="icon"
+                                onClick={() => removeQuestion(index)}
+                                >
+                                <Trash2 className="h-4 w-4" />
+                                </Button>
+                            </div>
+                            </CardHeader>
+                            {(['dropdown', 'checkbox', 'radio'].includes(question.questionType as QuestionType)) && 
+                            question.options && (
+                            <CardContent>
+                                <div className="space-y-1">
+                                <p className="text-sm font-medium">Options:</p>
+                                <ul className="list-disc list-inside text-sm text-muted-foreground">
+                                    {question.options.map((option, i) => (
+                                    <li key={i}>{option}</li>
+                                    ))}
+                                </ul>
+                                </div>
+                            </CardContent>
+                            )}
+                        </Card>
+                        ))}
+                    </div>
+                    )}
+                
+                    <Separator className="my-2" />
+                
+                    <div className="space-y-4 mt-2">
+                    <h3 className="text-lg font-medium">Add Question</h3>
+                    <div className="grid gap-3">
+                        <div className="grid gap-2">
+                        <Label htmlFor="label">Question Text</Label>
+                        <Input
+                            id="label"
+                            name="label"
+                            value={newQuestion.label}
+                            onChange={handleQuestionInputChange}
+                            placeholder="Enter your question"
+                        />
+                        </div>
+                    
+                        <div className="grid gap-2">
+                        <Label htmlFor="questionType">Question Type</Label>
+                        <Select
+                            value={newQuestion.questionType}
+                            onValueChange={handleQuestionTypeChange}
+                        >
+                            <SelectTrigger>
+                            <SelectValue placeholder="Select question type" />
+                            </SelectTrigger>
+                            <SelectContent>
+                            {questionTypes.map((type) => (
+                                <SelectItem key={type.value} value={type.value}>
+                                {type.label}
+                                </SelectItem>
+                            ))}
+                            </SelectContent>
+                        </Select>
+                        </div>
+                    
+                        {['dropdown', 'checkbox', 'radio'].includes(newQuestion.questionType) && (
+                        <div className="space-y-3">
+                            <Label>Options</Label>
+                            {newQuestion.options.map((option, index) => (
+                            <div key={index} className="flex gap-2">
+                                <Input
+                                value={option}
+                                onChange={(e) => handleOptionChange(index, e.target.value)}
+                                placeholder={`Option ${index + 1}`}
+                                />
+                                <Button
+                                type="button"
+                                variant="outline"
+                                size="icon"
+                                onClick={() => removeOption(index)}
+                                disabled={newQuestion.options.length <= 1}
+                                >
+                                <Trash2 className="h-4 w-4" />
+                                </Button>
+                            </div>
+                            ))}
+                            <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={addOption}
+                            className="mt-2"
+                            >
+                            <Plus className="h-4 w-4 mr-2" />
+                            Add Option
+                            </Button>
+                        </div>
+                        )}
+                    
+                        <div className="flex items-center space-x-2 mt-1">
+                        <Switch
+                            id="required"
+                            checked={newQuestion.required}
+                            onCheckedChange={(checked) => 
+                            setNewQuestion((prev) => ({ ...prev, required: checked }))
+                            }
+                        />
+                        <Label htmlFor="required">Required question</Label>
+                        </div>
+                    
+                        <Button type="button" onClick={addQuestion} className="mt-2">
+                        <Plus className="h-4 w-4 mr-2" />
+                        Add Question
+                        </Button>
+                    </div>
+                    </div>
+                </div>
+              
+                <DialogFooter>
+                    <Button 
+                    variant="outline" 
+                    onClick={() => {
+                        setIsCreateOpen(false);
+                        resetForm();
+                    }}
+                    >
+                    Cancel
+                    </Button>
+                    <Button onClick={handleCreateForm}>Create Form</Button>
+                </DialogFooter>
+                </DialogContent>
+            </Dialog>
+            }
+        />
+
+        <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
+            <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+                <DialogTitle>Edit Event Form</DialogTitle>
+                <DialogDescription>
+                Make changes to the form structure and questions.
+                </DialogDescription>
+            </DialogHeader>
+          
+            <div className="grid gap-4 py-4">
                 <div className="grid gap-2">
-                  <Label htmlFor="title">Form Title</Label>
-                  <Input
+                <Label htmlFor="title">Form Title</Label>
+                <Input
                     id="title"
                     name="title"
                     value={formData.title}
                     onChange={handleInputChange}
                     placeholder="Enter form title"
-                  />
+                />
                 </div>
-                
+            
                 {formData.questions.length > 0 && (
-                  <div className="space-y-4 mt-4">
+                <div className="space-y-4 mt-4">
                     <h3 className="text-lg font-medium">Form Questions</h3>
                     {formData.questions.map((question, index) => (
-                      <Card key={index}>
+                    <Card key={index}>
                         <CardHeader className="pb-2">
-                          <div className="flex justify-between items-start">
+                        <div className="flex justify-between items-start">
                             <div>
-                              <CardTitle className="text-base">{question.label}</CardTitle>
-                              <CardDescription className="flex items-center mt-1">
+                            <CardTitle className="text-base">{question.label}</CardTitle>
+                            <CardDescription className="flex items-center mt-1">
                                 <Badge variant="outline" className="mr-2">
-                                  {questionTypes.find(t => t.value === question.questionType)?.label}
+                                {questionTypes.find(t => t.value === question.questionType)?.label}
                                 </Badge>
                                 {question.required && (
-                                  <Badge variant="secondary">Required</Badge>
+                                <Badge variant="secondary">Required</Badge>
                                 )}
-                              </CardDescription>
+                            </CardDescription>
                             </div>
                             <Button
-                              variant="destructive"
-                              size="icon"
-                              onClick={() => removeQuestion(index)}
+                            variant="destructive"
+                            size="icon"
+                            onClick={() => removeQuestion(index)}
                             >
-                              <Trash2 className="h-4 w-4" />
+                            <Trash2 className="h-4 w-4" />
                             </Button>
-                          </div>
+                        </div>
                         </CardHeader>
                         {(['dropdown', 'checkbox', 'radio'].includes(question.questionType as QuestionType)) && 
-                          question.options && (
-                          <CardContent>
+                        question.options && (
+                        <CardContent>
                             <div className="space-y-1">
-                              <p className="text-sm font-medium">Options:</p>
-                              <ul className="list-disc list-inside text-sm text-muted-foreground">
+                            <p className="text-sm font-medium">Options:</p>
+                            <ul className="list-disc list-inside text-sm text-muted-foreground">
                                 {question.options.map((option, i) => (
-                                  <li key={i}>{option}</li>
+                                <li key={i}>{option}</li>
                                 ))}
-                              </ul>
+                            </ul>
                             </div>
-                          </CardContent>
+                        </CardContent>
                         )}
-                      </Card>
+                    </Card>
                     ))}
-                  </div>
+                </div>
                 )}
-                
+            
                 <Separator className="my-2" />
-                
+            
                 <div className="space-y-4 mt-2">
-                  <h3 className="text-lg font-medium">Add Question</h3>
-                  <div className="grid gap-3">
+                <h3 className="text-lg font-medium">Add Question</h3>
+                <div className="grid gap-3">
                     <div className="grid gap-2">
-                      <Label htmlFor="label">Question Text</Label>
-                      <Input
+                    <Label htmlFor="label">Question Text</Label>
+                    <Input
                         id="label"
                         name="label"
                         value={newQuestion.label}
                         onChange={handleQuestionInputChange}
                         placeholder="Enter your question"
-                      />
+                    />
                     </div>
-                    
+                
                     <div className="grid gap-2">
-                      <Label htmlFor="questionType">Question Type</Label>
-                      <Select
+                    <Label htmlFor="questionType">Question Type</Label>
+                    <Select
                         value={newQuestion.questionType}
                         onValueChange={handleQuestionTypeChange}
-                      >
+                    >
                         <SelectTrigger>
-                          <SelectValue placeholder="Select question type" />
+                        <SelectValue placeholder="Select question type" />
                         </SelectTrigger>
                         <SelectContent>
-                          {questionTypes.map((type) => (
+                        {questionTypes.map((type) => (
                             <SelectItem key={type.value} value={type.value}>
-                              {type.label}
+                            {type.label}
                             </SelectItem>
-                          ))}
+                        ))}
                         </SelectContent>
-                      </Select>
+                    </Select>
                     </div>
-                    
+                
                     {['dropdown', 'checkbox', 'radio'].includes(newQuestion.questionType) && (
-                      <div className="space-y-3">
+                    <div className="space-y-3">
                         <Label>Options</Label>
                         {newQuestion.options.map((option, index) => (
-                          <div key={index} className="flex gap-2">
+                        <div key={index} className="flex gap-2">
                             <Input
-                              value={option}
-                              onChange={(e) => handleOptionChange(index, e.target.value)}
-                              placeholder={`Option ${index + 1}`}
+                            value={option}
+                            onChange={(e) => handleOptionChange(index, e.target.value)}
+                            placeholder={`Option ${index + 1}`}
                             />
                             <Button
-                              type="button"
-                              variant="outline"
-                              size="icon"
-                              onClick={() => removeOption(index)}
-                              disabled={newQuestion.options.length <= 1}
+                            type="button"
+                            variant="outline"
+                            size="icon"
+                            onClick={() => removeOption(index)}
+                            disabled={newQuestion.options.length <= 1}
                             >
-                              <Trash2 className="h-4 w-4" />
+                            <Trash2 className="h-4 w-4" />
                             </Button>
-                          </div>
+                        </div>
                         ))}
                         <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={addOption}
-                          className="mt-2"
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={addOption}
+                        className="mt-2"
                         >
-                          <Plus className="h-4 w-4 mr-2" />
-                          Add Option
+                        <Plus className="h-4 w-4 mr-2" />
+                        Add Option
                         </Button>
-                      </div>
+                    </div>
                     )}
-                    
+                
                     <div className="flex items-center space-x-2 mt-1">
-                      <Switch
+                    <Switch
                         id="required"
                         checked={newQuestion.required}
                         onCheckedChange={(checked) => 
-                          setNewQuestion((prev) => ({ ...prev, required: checked }))
+                        setNewQuestion((prev) => ({ ...prev, required: checked }))
                         }
-                      />
-                      <Label htmlFor="required">Required question</Label>
+                    />
+                    <Label htmlFor="required">Required question</Label>
                     </div>
-                    
+                
                     <Button type="button" onClick={addQuestion} className="mt-2">
-                      <Plus className="h-4 w-4 mr-2" />
-                      Add Question
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Question
                     </Button>
-                  </div>
                 </div>
-              </div>
-              
-              <DialogFooter>
+                </div>
+            </div>
+          
+            <DialogFooter>
                 <Button 
-                  variant="outline" 
-                  onClick={() => {
-                    setIsCreateOpen(false);
+                variant="outline" 
+                onClick={() => {
+                    setIsEditOpen(false);
+                    setFormToEdit(null);
                     resetForm();
-                  }}
+                }}
                 >
-                  Cancel
+                Cancel
                 </Button>
-                <Button onClick={handleCreateForm}>Create Form</Button>
-              </DialogFooter>
+                <Button onClick={handleUpdateForm}>Save Changes</Button>
+            </DialogFooter>
             </DialogContent>
-          </Dialog>
-        }
-      />
+        </Dialog>
 
-      <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-        <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Edit Event Form</DialogTitle>
-            <DialogDescription>
-              Make changes to the form structure and questions.
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
-              <Label htmlFor="title">Form Title</Label>
-              <Input
-                id="title"
-                name="title"
-                value={formData.title}
-                onChange={handleInputChange}
-                placeholder="Enter form title"
-              />
-            </div>
-            
-            {formData.questions.length > 0 && (
-              <div className="space-y-4 mt-4">
-                <h3 className="text-lg font-medium">Form Questions</h3>
-                {formData.questions.map((question, index) => (
-                  <Card key={index}>
-                    <CardHeader className="pb-2">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <CardTitle className="text-base">{question.label}</CardTitle>
-                          <CardDescription className="flex items-center mt-1">
-                            <Badge variant="outline" className="mr-2">
-                              {questionTypes.find(t => t.value === question.questionType)?.label}
-                            </Badge>
-                            {question.required && (
-                              <Badge variant="secondary">Required</Badge>
-                            )}
-                          </CardDescription>
-                        </div>
-                        <Button
-                          variant="destructive"
-                          size="icon"
-                          onClick={() => removeQuestion(index)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </CardHeader>
-                    {(['dropdown', 'checkbox', 'radio'].includes(question.questionType as QuestionType)) && 
-                      question.options && (
-                      <CardContent>
-                        <div className="space-y-1">
-                          <p className="text-sm font-medium">Options:</p>
-                          <ul className="list-disc list-inside text-sm text-muted-foreground">
-                            {question.options.map((option, i) => (
-                              <li key={i}>{option}</li>
-                            ))}
-                          </ul>
-                        </div>
-                      </CardContent>
-                    )}
-                  </Card>
-                ))}
-              </div>
-            )}
-            
-            <Separator className="my-2" />
-            
-            <div className="space-y-4 mt-2">
-              <h3 className="text-lg font-medium">Add Question</h3>
-              <div className="grid gap-3">
-                <div className="grid gap-2">
-                  <Label htmlFor="label">Question Text</Label>
-                  <Input
-                    id="label"
-                    name="label"
-                    value={newQuestion.label}
-                    onChange={handleQuestionInputChange}
-                    placeholder="Enter your question"
-                  />
-                </div>
-                
-                <div className="grid gap-2">
-                  <Label htmlFor="questionType">Question Type</Label>
-                  <Select
-                    value={newQuestion.questionType}
-                    onValueChange={handleQuestionTypeChange}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select question type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {questionTypes.map((type) => (
-                        <SelectItem key={type.value} value={type.value}>
-                          {type.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                {['dropdown', 'checkbox', 'radio'].includes(newQuestion.questionType) && (
-                  <div className="space-y-3">
-                    <Label>Options</Label>
-                    {newQuestion.options.map((option, index) => (
-                      <div key={index} className="flex gap-2">
-                        <Input
-                          value={option}
-                          onChange={(e) => handleOptionChange(index, e.target.value)}
-                          placeholder={`Option ${index + 1}`}
-                        />
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="icon"
-                          onClick={() => removeOption(index)}
-                          disabled={newQuestion.options.length <= 1}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    ))}
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={addOption}
-                      className="mt-2"
-                    >
-                      <Plus className="h-4 w-4 mr-2" />
-                      Add Option
-                    </Button>
-                  </div>
-                )}
-                
-                <div className="flex items-center space-x-2 mt-1">
-                  <Switch
-                    id="required"
-                    checked={newQuestion.required}
-                    onCheckedChange={(checked) => 
-                      setNewQuestion((prev) => ({ ...prev, required: checked }))
-                    }
-                  />
-                  <Label htmlFor="required">Required question</Label>
-                </div>
-                
-                <Button type="button" onClick={addQuestion} className="mt-2">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Question
-                </Button>
-              </div>
-            </div>
-          </div>
-          
-          <DialogFooter>
-            <Button 
-              variant="outline" 
-              onClick={() => {
-                setIsEditOpen(false);
-                setFormToEdit(null);
-                resetForm();
-              }}
-            >
-              Cancel
-            </Button>
-            <Button onClick={handleUpdateForm}>Save Changes</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      <div className="mt-6 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {isLoading ? (
-          <p>Loading event forms...</p>
-        ) : eventForms.length === 0 ? (
-          <div className="col-span-full flex flex-col items-center justify-center py-12">
-            <FileQuestion className="h-16 w-16 text-muted-foreground/40 mb-4" />
-            <h3 className="text-xl font-medium">No forms found</h3>
-            <p className="text-muted-foreground mt-2 text-center max-w-md">
-              You haven't created any event registration forms yet. Create a form to collect information from event attendees.
-            </p>
-            <Button 
-              onClick={() => setIsCreateOpen(true)}
-              className="mt-6"
-            >
-              <Plus className="mr-2 h-4 w-4" />
-              Create Form
-            </Button>
-          </div>
-        ) : (
-          eventForms.map((form) => (
-            <Card key={form.id} className="overflow-hidden">
-              <CardHeader>
-                <CardTitle>{form.title}</CardTitle>
-                <CardDescription>
-                  {form.questions.length} {form.questions.length === 1 ? 'question' : 'questions'}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  <p className="text-sm font-medium">Questions preview:</p>
-                  <ul className="space-y-1 text-sm text-muted-foreground">
-                    {form.questions.slice(0, 3).map((question, index) => (
-                      <li key={index} className="flex items-center">
-                        <span className="truncate">{question.label}</span>
-                        {question.required && (
-                          <Badge variant="outline" className="ml-2 text-xs">Required</Badge>
-                        )}
-                      </li>
-                    ))}
-                    {form.questions.length > 3 && (
-                      <li className="text-xs text-muted-foreground italic">
-                        + {form.questions.length - 3} more questions
-                      </li>
-                    )}
-                  </ul>
-                </div>
-              </CardContent>
-              <CardFooter className="flex justify-between bg-muted/50 p-4">
+        <div className="mt-6 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {isLoading ? (
+            <p>Loading event forms...</p>
+            ) : eventForms.length === 0 ? (
+            <div className="col-span-full flex flex-col items-center justify-center py-12">
+                <FileQuestion className="h-16 w-16 text-muted-foreground/40 mb-4" />
+                <h3 className="text-xl font-medium">No forms found</h3>
+                <p className="text-muted-foreground mt-2 text-center max-w-md">
+                You haven't created any event registration forms yet. Create a form to collect information from event attendees.
+                </p>
                 <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => handleEditClick(form)}
+                onClick={() => setIsCreateOpen(true)}
+                className="mt-6"
                 >
-                  <Edit className="h-4 w-4 mr-2" />
-                  Edit
+                <Plus className="mr-2 h-4 w-4" />
+                Create Form
                 </Button>
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
+            </div>
+            ) : (
+            eventForms.map((form) => (
+                <Card key={form.id} className="overflow-hidden">
+                <CardHeader>
+                    <CardTitle>{form.title}</CardTitle>
+                    <CardDescription>
+                    {form.questions.length} {form.questions.length === 1 ? 'question' : 'questions'}
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <div className="space-y-2">
+                    <p className="text-sm font-medium">Questions preview:</p>
+                    <ul className="space-y-1 text-sm text-muted-foreground">
+                        {form.questions.slice(0, 3).map((question, index) => (
+                        <li key={index} className="flex items-center">
+                            <span className="truncate">{question.label}</span>
+                            {question.required && (
+                            <Badge variant="outline" className="ml-2 text-xs">Required</Badge>
+                            )}
+                        </li>
+                        ))}
+                        {form.questions.length > 3 && (
+                        <li className="text-xs text-muted-foreground italic">
+                            + {form.questions.length - 3} more questions
+                        </li>
+                        )}
+                    </ul>
+                    </div>
+                </CardContent>
+                <CardFooter className="flex justify-between bg-muted/50 p-4">
                     <Button 
-                      variant="destructive" 
-                      size="sm"
-                      onClick={() => setFormToDelete(form.id)}
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => handleEditClick(form)}
                     >
-                      <Trash2 className="h-4 w-4 mr-2" />
-                      Delete
+                    <Edit className="h-4 w-4 mr-2" />
+                    Edit
                     </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Delete Form</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        Are you sure you want to delete this form? This action cannot be undone.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel onClick={() => setFormToDelete(null)}>
-                        Cancel
-                      </AlertDialogCancel>
-                      <AlertDialogAction onClick={handleDeleteForm}>
+                    <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                        <Button 
+                        variant="destructive" 
+                        size="sm"
+                        onClick={() => setFormToDelete(form.id)}
+                        >
+                        <Trash2 className="h-4 w-4 mr-2" />
                         Delete
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              </CardFooter>
-            </Card>
-          ))
-        )}
-      </div>
-    </div>
+                        </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                        <AlertDialogTitle>Delete Form</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Are you sure you want to delete this form? This action cannot be undone.
+                        </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                        <AlertDialogCancel onClick={() => setFormToDelete(null)}>
+                            Cancel
+                        </AlertDialogCancel>
+                        <AlertDialogAction onClick={handleDeleteForm}>
+                            Delete
+                        </AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                    </AlertDialog>
+                </CardFooter>
+                </Card>
+            ))
+            )}
+        </div>
+        </div>
+    </InProgress>
   );
 };
 

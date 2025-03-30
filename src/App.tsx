@@ -12,6 +12,8 @@ import AppLayout from "./components/layout/AppLayout";
 import Login from "./pages/Auth/Login";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import InProgress from "./components/shared/InProgress";
+import Events from "./pages/Events/Events";
+import EventForms from "./pages/EventForms/EventForms";
 
 const queryClient = new QueryClient();
 
@@ -27,10 +29,10 @@ const App = () => (
           {/* Protected Routes */}
           <Route path="/" element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
             <Route index element={<Index />} />
-            <Route path="/events" element={<InProgress />} />
+            <Route path="/events" element={<Events />} />
             <Route path="/members" element={<Members />} />
             <Route path="/members/:id" element={<MemberDetail />} />
-            <Route path="/event-forms" element={<InProgress />} />
+            <Route path="/event-forms" element={<EventForms />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Route>
